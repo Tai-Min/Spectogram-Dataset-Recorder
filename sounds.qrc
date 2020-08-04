@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>stop.wav</file>
+        <file>start.wav</file>
+    </qresource>
+</RCC>
