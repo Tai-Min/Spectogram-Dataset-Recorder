@@ -10,6 +10,7 @@ Simple GUI tool written in Qt to record sound from microphone input or speakers 
 * Allows batch recording one after another
 * Exports to four different formats: plain text (.txt), numpy array (.npy), color image (.jpg), grayscale image (.jpg)
 * Saves samples under "path\to\dataset_root\class_name"
+* Does not overwrite previous recordings
 
 ## Compiling
 I have compiled it using Qt Creator 4.9.2, Qt 5.15.0 and MSVC19 64 bit. zlib 64 bit is required (I have compiled [this](https://github.com/kiyolee/zlib-win-build) and works flawlessly). To compile, change INCLUDEPATH and LIBS in .pro file to correct path to zlib. 
