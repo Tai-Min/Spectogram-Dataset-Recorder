@@ -1,6 +1,8 @@
 # Spectogram Dataset Recorder
 Simple GUI tool written in Qt to record sound from microphone input or speakers that exports it as spectogram either as Mel Scale Filter Banks or Mel Frequency Cepstral Coefficients. This program was created to create dataset for sound event detection. I relied on [this article](https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html) to create this tool.
 
+![alt text](https://github.com/Tai-Min/Spectogram-Dataset-Recorder/blob/master/recorder.jpg "Recorder image")
+
 ## TODO
 - [ ] implement function to compute MFCC from given MSFB (currently only MSFB is computed even if MFCC is selected).
 
