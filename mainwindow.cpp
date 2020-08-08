@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QPixmap>
+#include <QTimer>
 
 #include <algorithm>
 #include <complex>
@@ -17,12 +18,14 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
+    recorder(new QTimer(this)),
+    counter(new QTimer(this)),
     startSound(":/start.wav"),
     stopSound(":/stop.wav")
 {
 
     ui->setupUi(this);
-    this->setFixedSize(QSize(500,660));
+    this->setFixedSize(QSize(500,760));
 
     ui->spectogramLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
@@ -40,6 +43,21 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     ui->stopButton->setEnabled(false);
+
+    connect(recorder, &QTimer::timeout, [this](){
+        const int sampleRate = ui->sampleRateInput->text().toInt();
+        const int numChannels = ui->channelCountInput->text().toInt();
+        const int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
+        const int recordDuration = ui->durationInput->text().toInt();
+
+        cout << "Required bytes: " << sampleRate*recordDuration*0.001*bytesPerSample*numChannels << endl;
+
+        while(audioBuf.buffer().size() < sampleRate*recordDuration*0.001*bytesPerSample*numChannels)
+            QCoreApplication::processEvents();
+
+        stopRecording(true);
+    });
+    connect(counter, &QTimer::timeout, this, &MainWindow::updateTimeLabel);
 }
 
 MainWindow::~MainWindow()
@@ -112,114 +130,68 @@ QAudioDeviceInfo MainWindow::getAudioDevice(QString name) {
 }
 
 bool MainWindow::validateInputs(){
-    // sample rate
-    if(ui->sampleRateInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Sample rate input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    if(ui->sampleRateInput->text().toInt() < 1000){
-        QMessageBox msgBox;
-        msgBox.setText("Minimum sample rate is 1000.");
-        msgBox.exec();
-        return 0;
-    }
-    // channel count
-    if(ui->channelCountInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Channel count input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    // duration
-    if(ui->recordType->currentText() == "Fixed duration" && ui->durationInput->text().toInt() < 1){
-        QMessageBox msgBox;
-        msgBox.setText("Invalid duration input.");
-        msgBox.exec();
-        return 0;
-    }
-    // class
-    if(ui->classInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Class input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    // pre emphasis
-    if(ui->preEmphasisInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Pre emphasis coeff input is empty.");
-        msgBox.exec();
-        return 0;
-    }
     bool ok;
     ui->preEmphasisInput->text().toDouble(&ok);
-    if(!ok){
-        QMessageBox msgBox;
-        msgBox.setText("Invalid pre emphasis coeff input.\n");
-        msgBox.exec();
-        return 0;
-    }
-    if(ui->preEmphasisInput->text().toDouble() > 1 || ui->preEmphasisInput->text().toDouble() < 0){
-        QMessageBox msgBox;
-        msgBox.setText("Invalid pre emphasis coeff input.\n"
-                       "Pre emphasis coeff should be between 0 and 1.");
-        msgBox.exec();
-        return 0;
-    }
+
+    QString errText = "";
+    // sample rate
+    if(ui->sampleRateInput->text() == "")
+        errText = "Sample rate input is empty.";
+    else if(ui->sampleRateInput->text().toInt() < 1000)
+        errText = "Minimum sample rate is 1000.";
+
+    // channel count
+    else if(ui->channelCountInput->text() == "")
+        errText = "Channel count input is empty.";
+
+    // duration
+    else if(ui->recordType->currentText() == "Fixed duration" && ui->durationInput->text().toInt() < 40)
+        errText = "Duration input can't be less than 40.";
+
+    // class
+    else if(ui->classInput->text() == "")
+        errText = "Class input is empty.";
+
+    // pre emphasis
+    else if(ui->preEmphasisInput->text() == "")
+        errText = "Pre emphasis coeff input is empty.";
+
+    else if(!ok)
+        errText = "Invalid pre emphasis coeff input.\n";
+    else if(ui->preEmphasisInput->text().toDouble() > 1 || ui->preEmphasisInput->text().toDouble() < 0)
+        errText = "Invalid pre emphasis coeff input.\nPre emphasis coeff should be between 0 and 1.";
+
     // frame size
-    if(ui->frameSizeInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Frame size input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    if(ui->frameSizeInput->text().toInt() < 1){
-        QMessageBox msgBox;
-        msgBox.setText("Frame size input can't be less than 1.");
-        msgBox.exec();
-        return 0;
-    }
+    else if(ui->frameSizeInput->text() == "")
+        errText = "Frame size input is empty.";
+    else if(ui->frameSizeInput->text().toInt() < 1)
+        errText = "Frame size input can't be less than 1.";
+
     // frame stride
-    if(ui->frameStrideInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("Frame stride input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    if(ui->frameStrideInput->text().toInt() < 1){
-        QMessageBox msgBox;
-        msgBox.setText("Frame stride input can't be less than 1.");
-        msgBox.exec();
-        return 0;
-    }
+    else if(ui->frameStrideInput->text() == "")
+        errText = "Frame stride input is empty.";
+    else if(ui->frameStrideInput->text().toInt() < 1)
+        errText = "Frame stride input can't be less than 1.";
+
     // fft points
-    if(ui->FFTPointsInput->text() == ""){
-        QMessageBox msgBox;
-        msgBox.setText("FFT input is empty.");
-        msgBox.exec();
-        return 0;
-    }
-    if(ui->FFTPointsInput->text().toInt() < 1){
-        QMessageBox msgBox;
-        msgBox.setText("FFT input can't be less than 1.");
-        msgBox.exec();
-        return 0;
-    }
+    if(ui->FFTPointsInput->text() == "")
+        errText = "FFT input is empty.";
+    if(ui->FFTPointsInput->text().toInt() < 1)
+        errText = "FFT input can't be less than 1.";
+
     // filter banks
-    if(ui->filterBanksInput->text() == ""){
+    else if(ui->filterBanksInput->text() == "")
+        errText = "Filter banks input is empty.";
+    else if(ui->filterBanksInput->text().toInt() < 1)
+        errText = "Filter banks input can't be less than 1.";
+
+    if(errText != ""){
         QMessageBox msgBox;
-        msgBox.setText("Filter banks input is empty.");
+        msgBox.setText(errText);
         msgBox.exec();
         return 0;
     }
-    if(ui->filterBanksInput->text().toInt() < 1){
-        QMessageBox msgBox;
-        msgBox.setText("Filter banks input can't be less than 1.");
-        msgBox.exec();
-        return 0;
-    }
+
     return 1;
 }
 
@@ -249,6 +221,8 @@ void MainWindow::prepareClassFolder(){
 }
 
 QString MainWindow::findAvailableFilename(){
+    static int fname = 1; // keep it static so it won't iterate over whole dataset everytime it needs to save a file
+
     QDir dir;
     dir.setPath(ui->directoryDisplay->text());
     dir.cd(ui->classInput->text());
@@ -259,7 +233,6 @@ QString MainWindow::findAvailableFilename(){
     else if(ui->fileFormat->currentText() == "JPG color image" || ui->fileFormat->currentText() == "JPG grayscale image")
         format = ".jpg";
 
-    unsigned long long fname = 1;
     while(dir.exists(QString::number(fname) + format)){
         fname++;
     }
@@ -347,7 +320,7 @@ void MainWindow::saveNumpy(QString fname, QString dname, const AudioProcessor::v
 
 void MainWindow::saveRecording(){
     AudioProcessor::vec2d spectogram = processAudioBuffer();
-
+    cout << spectogram.size() << " " << spectogram[0].size() << endl;
     // create QImage from spectogram and display it and maybe save as jpg if it's selected
     QImage spectogramImg = spectogramToImg(spectogram);
     ui->spectogramLabel->setPixmap(QPixmap::fromImage(spectogramImg.scaled(QSize(ui->spectogramLabel->width(), ui->spectogramLabel->height()))));
@@ -488,27 +461,53 @@ void MainWindow::startRecording(){
 
     uxRecording();
 
-    secs = 0;
-    mins = 0;
-    setTimeLabel();
-
     audioInput = new QAudioInput(format, this);
-    audioInput->setNotifyInterval(1000);
-    connect(audioInput, SIGNAL(notify()), this, SLOT(audioDevice_notify()));
 
     audioBuf.open(QIODevice::ReadWrite);
 
+    counter->start(1000);
     audioInput->start(&audioBuf);
+
+    if(ui->recordType->currentText() == "Fixed duration"){
+        recorder->start(ui->durationInput->text().toInt());
+    }
+
+    QCoreApplication::processEvents(); // ??? required as without it app lags a bit if mouse has not moved which also affects recording device
 }
 
-void MainWindow::stopRecording(){
+void MainWindow::stopRecording(bool fixedDurationSuccess){
     audioInput->stop();
+    recorder->stop();
+    counter->stop();
 
     delete audioInput;
 
+    cout << "Flag: " << fixedDurationSuccess << endl;
+
     if(ui->recordType->currentText() == "Fixed duration"){
+
+        cout << "First: " << audioBuf.buffer().size() << endl;
+
         // fixed duration recording finished successfully
-        if(secs + mins * 60 >= ui->durationInput->text().toInt()){
+        if(fixedDurationSuccess){
+            // make sure that there is expected number of sample in buffer
+            // if there is too many samples then trim buffer
+            // if there is less then append zeros
+            const int sampleRate = ui->sampleRateInput->text().toInt();
+            const int numChannels = ui->channelCountInput->text().toInt();
+            const int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
+            const int recordDuration = ui->durationInput->text().toInt();
+            const int expectedNumberOfSamples = sampleRate * bytesPerSample * numChannels * recordDuration*0.001;
+            if(audioBuf.buffer().size() > expectedNumberOfSamples){
+                const int diff = audioBuf.buffer().size() - expectedNumberOfSamples;
+                audioBuf.buffer().remove(expectedNumberOfSamples, diff);
+            }
+            else if(audioBuf.buffer().size() < expectedNumberOfSamples){
+                const int diff = expectedNumberOfSamples - audioBuf.buffer().size();
+                audioBuf.buffer().append(diff, 0);
+            }
+
+            cout << "Second: " << audioBuf.buffer().size() << endl;
 
             saveRecording();
 
@@ -568,7 +567,8 @@ void MainWindow::on_directoryButton_clicked()
 
 void MainWindow::on_stopButton_clicked()
 {
-    stopRecording();
+    bool flag = ui->recordType->currentText() == "Fixed duration" ? false : true;
+    stopRecording(flag);
 }
 
 void MainWindow::on_startButton_clicked()
@@ -583,36 +583,11 @@ void MainWindow::on_startRepeatButton_clicked()
     startRecording();
 }
 
-void MainWindow::audioDevice_notify(){
-
-    // time input update
+void MainWindow::updateTimeLabel(){
     secs++;
     if(secs >= 60){
         secs = 0;
         mins++;
     }
     setTimeLabel();
-
-    // check if fixed duration timer finished and preprocess audio buffer if necessary
-    if(ui->recordType->currentText() == "Fixed duration" && secs + mins * 60 >= ui->durationInput->text().toInt()){
-        // make sure that there is expected number of sample in buffer
-        // if there is too many samples then trim buffer
-        // if there is less then append zeros
-        const int sampleRate = ui->sampleRateInput->text().toInt();
-        const int numChannels = ui->channelCountInput->text().toInt();
-        const int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
-        const int recordDuration = ui->durationInput->text().toInt();
-        const int expectedNumberOfSamples = sampleRate * bytesPerSample * numChannels * recordDuration;
-
-        if(audioBuf.buffer().size() > expectedNumberOfSamples){
-            const int diff = audioBuf.buffer().size() - expectedNumberOfSamples;
-            audioBuf.buffer().remove(expectedNumberOfSamples, diff);
-        }
-        else if(audioBuf.buffer().size() < expectedNumberOfSamples){
-            const int diff = expectedNumberOfSamples - audioBuf.buffer().size();
-            audioBuf.buffer().append(diff, 0);
-        }
-
-        stopRecording();
-    }
 }

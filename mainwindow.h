@@ -32,24 +32,49 @@ private slots:
 
     void on_startRepeatButton_clicked();
 
-    void audioDevice_notify();
+    void updateTimeLabel();
+
+    /**
+     * @brief Do all stuff required to stop recording audio. Stop recorder, play stop.wav, save record, clear audio buffer and restart recording if necessary.
+     */
+    void stopRecording(bool fixedDurationSuccess);
 
 private:
     Ui::MainWindow *ui;
 
-    int mins = 0; //!< keep number of minutes since start of recording.
-    int secs = 0; //!< keep number of seconds since start of recording.
+    QTimer *recorder; //!< For fixed duration stop after duration has passed.
+    QTimer *counter; //!< Update time label.
 
-    QSound startSound; //!< play start.wav.
-    QSound stopSound; //!< play stop.wav.
+    int mins = 0; //!< Keep number of minutes since start of recording.
+    int secs = 0; //!< Keep number of seconds since start of recording.
 
-    bool isRepeating = false; //!< true when START REPEAT is used, false otherwise.
+    QSound startSound; //!< Play start.wav.
+    QSound stopSound; //!< Play stop.wav.
 
-    QAudioInput *audioInput; //!< device used to record data.
-    QBuffer audioBuf; //!< raw audio data is stored here.
+    bool isRepeating = false; //!< True when START REPEAT is used, false otherwise.
 
+    QAudioInput *audioInput; //!< Device used to record data.
+    QBuffer audioBuf; //!< Raw audio data is stored here.
+
+    /**
+     * @brief Find smallest value in matrix.
+     * @param Vector to search.
+     * @return Smallest value in matrix.
+     */
     long double minMatrix(const AudioProcessor::vec2d & v);
+
+    /**
+     * @brief Find biggest value in matrix.
+     * @param Vector to search.
+     * @return Biggest value in matrix.
+     */
     long double maxMatrix(const AudioProcessor::vec2d & v);
+
+    /**
+     * @brief Use obtained spectogram data to obtain it's heatmap.
+     * @param v Matrix to get heatmap from.
+     * @return QImage with heatmap.
+     */
     QImage spectogramToImg(const AudioProcessor::vec2d & v);
 
     /**
@@ -86,22 +111,46 @@ private:
     QString findAvailableFilename();
 
     /**
-     * @brief TODO
+     * @brief Process obtained audio/pcm samples and receive matrix containing it's spectogram.
      *
      * @return Spectogram of audio buffer
      */
     AudioProcessor::vec2d processAudioBuffer();
 
+    /**
+     * @brief Save spectogram in plain .txt.
+     * @param Filename.
+     * @param Directory path.
+     * @param Spectogram data.
+     */
     void savePlain(QString fname, QString dname, const AudioProcessor::vec2d & data);
 
+    /**
+     * @brief Save spectogram as color image in .jpg format.
+     * @param Filename.
+     * @param Directory path.
+     * @param Spectogram data.
+     */
     void saveColorImg(QString fname, QString dname, const QImage & img);
 
+    /**
+     * @brief Save spectogram as grayscale image in .jpg format.
+     * @param Filename.
+     * @param Directory path.
+     * @param Spectogram data.
+     */
     void saveGrayscaleImg(QString fname, QString dname, const QImage & img);
 
+    /**
+     * @brief Save spectogram as numpy array .npy.
+     * @param Filename.
+     * @param Directory path.
+     * @param Spectogram data.
+     */
     void saveNumpy(QString fname, QString dname, const AudioProcessor::vec2d & data);
 
     /**
-     * @brief TODO
+     * @brief Save recorded and processed audio to file under given in UI directory.
      */
     void saveRecording();
 
@@ -133,11 +182,6 @@ private:
      * @brief Do all stuff to record audio. Validate inputs, format, play start.wav and start recording.
      */
     void startRecording();
-
-    /**
-     * @brief Do all stuff required to stop recording audio. Stop recorder, play stop.wav, save record, clear audio buffer and restart recording if necessary.
-     */
-    void stopRecording();
 };
 
 #endif // MAINWINDOW_H
