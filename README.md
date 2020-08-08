@@ -16,6 +16,3 @@ Simple GUI tool written in Qt to record sound from microphone input or speakers 
 
 ## Compiling
 I have compiled it using Qt Creator 4.9.2, Qt 5.15.0 and MSVC19 64 bit. zlib 64 bit is required (I have compiled [this](https://github.com/kiyolee/zlib-win-build) and works flawlessly). To compile, change INCLUDEPATH and LIBS in .pro file to correct path to zlib. 
-
-## Issues
-For some reason, during batch recording, the recording can "hang" for some seconds. This is not really an issue as during recording only n first samples are used and the rest is discarded.
