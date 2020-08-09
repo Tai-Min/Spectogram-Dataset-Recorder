@@ -39,6 +39,12 @@ private slots:
      */
     void stopRecording(bool fixedDurationSuccess);
 
+    void on_resultMatrix_currentTextChanged(const QString &arg1);
+
+    void on_lifteringInput_currentTextChanged(const QString &arg1);
+
+    void on_rescaleInput_currentTextChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 
@@ -57,25 +63,11 @@ private:
     QBuffer audioBuf; //!< Raw audio data is stored here.
 
     /**
-     * @brief Find smallest value in matrix.
-     * @param Vector to search.
-     * @return Smallest value in matrix.
-     */
-    long double minMatrix(const AudioProcessor::vec2d & v);
-
-    /**
-     * @brief Find biggest value in matrix.
-     * @param Vector to search.
-     * @return Biggest value in matrix.
-     */
-    long double maxMatrix(const AudioProcessor::vec2d & v);
-
-    /**
      * @brief Use obtained spectogram data to obtain it's heatmap.
      * @param v Matrix to get heatmap from.
      * @return QImage with heatmap.
      */
-    QImage spectogramToImg(const AudioProcessor::vec2d & v);
+    QImage spectogramToImg(const MatrixMath::vec2d & v);
 
     /**
      * @brief Get info about device of given name.
@@ -115,7 +107,7 @@ private:
      *
      * @return Spectogram of audio buffer
      */
-    AudioProcessor::vec2d processAudioBuffer();
+    MatrixMath::vec2d processAudioBuffer();
 
     /**
      * @brief Save spectogram in plain .txt.
@@ -123,7 +115,7 @@ private:
      * @param Directory path.
      * @param Spectogram data.
      */
-    void savePlain(QString fname, QString dname, const AudioProcessor::vec2d & data);
+    void savePlain(QString fname, QString dname, const MatrixMath::vec2d & data);
 
     /**
      * @brief Save spectogram as color image in .jpg format.
@@ -147,7 +139,7 @@ private:
      * @param Directory path.
      * @param Spectogram data.
      */
-    void saveNumpy(QString fname, QString dname, const AudioProcessor::vec2d & data);
+    void saveNumpy(QString fname, QString dname, const MatrixMath::vec2d & data);
 
     /**
      * @brief Save recorded and processed audio to file under given in UI directory.

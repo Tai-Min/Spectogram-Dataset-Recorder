@@ -12,9 +12,6 @@
 
 #include "thirdparty/cnpy/cnpy.h"
 
-#include <iostream>
-using namespace std;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -25,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    this->setFixedSize(QSize(500,760));
+    this->setFixedSize(QSize(500,890));
 
     ui->spectogramLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
@@ -50,8 +47,6 @@ MainWindow::MainWindow(QWidget *parent) :
         const int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
         const int recordDuration = ui->durationInput->text().toInt();
 
-        cout << "Required bytes: " << sampleRate*recordDuration*0.001*bytesPerSample*numChannels << endl;
-
         while(audioBuf.buffer().size() < sampleRate*recordDuration*0.001*bytesPerSample*numChannels)
             QCoreApplication::processEvents();
 
@@ -65,40 +60,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-long double MainWindow::minMatrix(const AudioProcessor::vec2d & v){
-    long double minVal = std::numeric_limits<long double>::max();
-
-    for(unsigned int i = 0; i < v.size(); i++){
-        for(unsigned int j = 0; j < v[i].size(); j++){
-            if(v[i][j] < minVal)
-                minVal = v[i][j];
-        }
-    }
-
-    return minVal;
-}
-
-long double MainWindow::maxMatrix(const AudioProcessor::vec2d & v){
-    long double maxVal = std::numeric_limits<long double>::min();
-
-    for(unsigned int i = 0; i < v.size(); i++){
-        for(unsigned int j = 0; j < v[i].size(); j++){
-            if(v[i][j] > maxVal)
-                maxVal = v[i][j];
-        }
-    }
-
-    return maxVal;
-}
-
-QImage MainWindow::spectogramToImg(const AudioProcessor::vec2d & v){
-    const long double minValSrc = minMatrix(v);
-    const long double maxValSrc = maxMatrix(v);
+QImage MainWindow::spectogramToImg(const MatrixMath::vec2d & v){
+    const long double minValSrc = MatrixMath::minMatrix(v);
+    const long double maxValSrc = MatrixMath::maxMatrix(v);
     const long double colorMax = 0; // red in HSV
     const long double colorMin = 240; // dark blue in HSV
     const long double a = (colorMax - colorMin)/(maxValSrc - minValSrc);
     const long double b = colorMin - a * minValSrc;
-
     QImage img = QImage(v[0].size(), v.size(), QImage::Format_RGB32);
 
     for(unsigned int i = 0; i < v.size(); i++){
@@ -130,8 +98,6 @@ QAudioDeviceInfo MainWindow::getAudioDevice(QString name) {
 }
 
 bool MainWindow::validateInputs(){
-    bool ok;
-    ui->preEmphasisInput->text().toDouble(&ok);
 
     QString errText = "";
     // sample rate
@@ -145,7 +111,8 @@ bool MainWindow::validateInputs(){
         errText = "Channel count input is empty.";
 
     // duration
-    else if(ui->recordType->currentText() == "Fixed duration" && ui->durationInput->text().toInt() < 40)
+    else if(ui->recordType->currentText() == "Fixed duration" &&
+            ui->durationInput->text().toInt() < 40)
         errText = "Duration input can't be less than 40.";
 
     // class
@@ -156,8 +123,6 @@ bool MainWindow::validateInputs(){
     else if(ui->preEmphasisInput->text() == "")
         errText = "Pre emphasis coeff input is empty.";
 
-    else if(!ok)
-        errText = "Invalid pre emphasis coeff input.\n";
     else if(ui->preEmphasisInput->text().toDouble() > 1 || ui->preEmphasisInput->text().toDouble() < 0)
         errText = "Invalid pre emphasis coeff input.\nPre emphasis coeff should be between 0 and 1.";
 
@@ -174,9 +139,9 @@ bool MainWindow::validateInputs(){
         errText = "Frame stride input can't be less than 1.";
 
     // fft points
-    if(ui->FFTPointsInput->text() == "")
+    else if(ui->FFTPointsInput->text() == "")
         errText = "FFT input is empty.";
-    if(ui->FFTPointsInput->text().toInt() < 1)
+    else if(ui->FFTPointsInput->text().toInt() < 1)
         errText = "FFT input can't be less than 1.";
 
     // filter banks
@@ -184,6 +149,50 @@ bool MainWindow::validateInputs(){
         errText = "Filter banks input is empty.";
     else if(ui->filterBanksInput->text().toInt() < 1)
         errText = "Filter banks input can't be less than 1.";
+
+    // MFCC coeffs
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->firstMFCCInput->text() == "")
+        errText = "First MFFC input is empty.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->lastMFCCInput->text() == "")
+        errText = "Last MFFC input is empty.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->firstMFCCInput->text().toInt() < 1)
+        errText = "First MFFC coeff can't be less than 1.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->lastMFCCInput->text().toInt() < 1)
+        errText = "Last MFFC coeff can't be less than 1.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->firstMFCCInput->text().toInt() > ui->filterBanksInput->text().toInt())
+        errText = "First MFFC coeff can't be bigger than number of filter banks.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->lastMFCCInput->text().toInt() > ui->filterBanksInput->text().toInt())
+        errText = "First MFFC coeff can't be bigger than number of filter banks.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->firstMFCCInput->text().toInt() > ui->lastMFCCInput->text().toInt())
+        errText = "Last MFFC coeff can't be bigger than last MFCC coeff.";
+
+    // Cepstral lifters
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->lifteringInput->currentText() == "Apply sinusoidal liftering" &&
+            ui->cepLiftersInput->text() == "")
+        errText = "Cepstral lifter input is empty.";
+    else if(ui->resultMatrix->currentText() == "MFFC" &&
+            ui->lifteringInput->currentText() == "Apply sinusoidal liftering" &&
+            ui->cepLiftersInput->text().toInt() < 1)
+        errText = "Cepstral lifter can't be less than 1.";
+
+    // Rescale
+    else if(ui->rescaleInput->currentText() == "Rescale" &&
+            ui->rescaleMinInput->text() == "")
+        errText = "Rescale parameters can't be empty";
+    else if(ui->rescaleInput->currentText() == "Rescale" &&
+            ui->rescaleMaxInput->text() == "")
+        errText = "Rescale parameters can't be empty";
+    else if(ui->rescaleInput->currentText() == "Rescale" &&
+            ui->rescaleMaxInput->text().toDouble() == ui->rescaleMinInput->text().toDouble())
+        errText = "Rescale parameters can't be equal.";
 
     if(errText != ""){
         QMessageBox msgBox;
@@ -239,7 +248,7 @@ QString MainWindow::findAvailableFilename(){
     return QString::number(fname) + format;
 }
 
-AudioProcessor::vec2d MainWindow::processAudioBuffer(){
+MatrixMath::vec2d MainWindow::processAudioBuffer(){
     const unsigned int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
     const unsigned int numberOfChannels = ui->channelCountInput->text().toInt();
     const unsigned int sampleRate = ui->sampleRateInput->text().toInt();
@@ -248,6 +257,11 @@ AudioProcessor::vec2d MainWindow::processAudioBuffer(){
     const unsigned int frameStride = ui->frameStrideInput->text().toInt();
     const unsigned int NFFT = ui->FFTPointsInput->text().toInt();
     const unsigned int numFilterBanks = ui->filterBanksInput->text().toInt();
+    const unsigned int firstMFCC = ui->firstMFCCInput->text().toInt();
+    const unsigned int lastMFCC = ui->lastMFCCInput->text().toInt();
+    const unsigned int cepLifter = ui->cepLiftersInput->text().toInt();
+    const long double scaleMin = static_cast<long double>(ui->rescaleMinInput->text().toDouble());
+    const long double scaleMax = static_cast<long double>(ui->rescaleMaxInput->text().toDouble());
 
     AudioProcessor::config conf = {
         bytesPerSample,
@@ -257,24 +271,32 @@ AudioProcessor::vec2d MainWindow::processAudioBuffer(){
         frameSize,
         frameStride,
         NFFT,
-        numFilterBanks
+        numFilterBanks,
+        firstMFCC,
+        lastMFCC,
+        cepLifter,
+        scaleMin,
+        scaleMax
     };
 
     AudioProcessor audioProc(conf);
     AudioProcessor::byteVec byteData(audioBuf.buffer().begin(), audioBuf.buffer().end());
 
-    AudioProcessor::vec2d spectogram;
+    MatrixMath::vec2d spectogram;
     if(ui->resultMatrix->currentText() == "MSFB"){
-        spectogram = audioProc.MSFB(byteData);
+        spectogram = audioProc.MSFB(byteData, ui->rescaleInput->currentText() == "Rescale");
     }
     else{
-        spectogram = audioProc.MFCC(byteData);
+        bool lift = false;
+        if(ui->lifteringInput->currentText() == "Apply sinusoidal liftering")
+            lift = true;
+        spectogram = audioProc.MFCC(byteData, ui->rescaleInput->currentText() == "Rescale", lift);
     }
 
     return spectogram;
 }
 
-void MainWindow::savePlain(QString fname, QString dname, const AudioProcessor::vec2d & data){
+void MainWindow::savePlain(QString fname, QString dname, const MatrixMath::vec2d & data){
     QFile file(dname + "/" + fname);
     if(!file.open(QIODevice::WriteOnly)){
         QMessageBox msgBox;
@@ -303,11 +325,11 @@ void MainWindow::saveGrayscaleImg(QString fname, QString dname, const QImage & i
     gray.save(dname + "/" + fname);
 }
 
-void MainWindow::saveNumpy(QString fname, QString dname, const AudioProcessor::vec2d & data){
+void MainWindow::saveNumpy(QString fname, QString dname, const MatrixMath::vec2d & data){
     std::string f = fname.toStdString();
     std::string d = dname.toStdString();
 
-    AudioProcessor::vec data1d(data.size() * data[0].size());
+    MatrixMath::vec data1d(data.size() * data[0].size());
     for(unsigned int i = 0; i < data.size(); i++){
         if(i == 0)
             std::copy(data[i].begin(), data[i].end(), data1d.begin());
@@ -315,12 +337,12 @@ void MainWindow::saveNumpy(QString fname, QString dname, const AudioProcessor::v
             std::copy(data[i].begin(), data[i].end(), data1d.begin() + i*data[i-1].size());
     }
 
-    cnpy::npy_save(d + "/" + f, &data1d[0], {data.size(), data[0].size()}, "w");
+    cnpy::npy_save(d + "/" + f, &data1d[0], {data[0].size(), data[0].size()}, "w");
 }
 
 void MainWindow::saveRecording(){
-    AudioProcessor::vec2d spectogram = processAudioBuffer();
-    cout << spectogram.size() << " " << spectogram[0].size() << endl;
+    MatrixMath::vec2d spectogram = processAudioBuffer();
+
     // create QImage from spectogram and display it and maybe save as jpg if it's selected
     QImage spectogramImg = spectogramToImg(spectogram);
     ui->spectogramLabel->setPixmap(QPixmap::fromImage(spectogramImg.scaled(QSize(ui->spectogramLabel->width(), ui->spectogramLabel->height()))));
@@ -482,11 +504,7 @@ void MainWindow::stopRecording(bool fixedDurationSuccess){
 
     delete audioInput;
 
-    cout << "Flag: " << fixedDurationSuccess << endl;
-
     if(ui->recordType->currentText() == "Fixed duration"){
-
-        cout << "First: " << audioBuf.buffer().size() << endl;
 
         // fixed duration recording finished successfully
         if(fixedDurationSuccess){
@@ -506,8 +524,6 @@ void MainWindow::stopRecording(bool fixedDurationSuccess){
                 const int diff = expectedNumberOfSamples - audioBuf.buffer().size();
                 audioBuf.buffer().append(diff, 0);
             }
-
-            cout << "Second: " << audioBuf.buffer().size() << endl;
 
             saveRecording();
 
@@ -590,4 +606,44 @@ void MainWindow::updateTimeLabel(){
         mins++;
     }
     setTimeLabel();
+}
+
+void MainWindow::on_resultMatrix_currentTextChanged(const QString &arg1)
+{
+    if(arg1 == "MFFC"){
+        ui->firstMFCCInput->setEnabled(true);
+        ui->lastMFCCInput->setEnabled(true);
+        ui->lifteringInput->setEnabled(true);
+        if(ui->lifteringInput->currentText() == "Apply sinusoidal liftering"){
+            ui->cepLiftersInput->setEnabled(true);
+        }
+    }
+    else{
+        ui->firstMFCCInput->setEnabled(false);
+        ui->lastMFCCInput->setEnabled(false);
+        ui->lifteringInput->setEnabled(false);
+        ui->cepLiftersInput->setEnabled(false);
+    }
+}
+
+void MainWindow::on_lifteringInput_currentTextChanged(const QString &arg1)
+{
+    if(arg1 == "Apply sinusoidal liftering"){
+        ui->cepLiftersInput->setEnabled(true);
+    }
+    else{
+        ui->cepLiftersInput->setEnabled(false);
+    }
+}
+
+void MainWindow::on_rescaleInput_currentTextChanged(const QString &arg1)
+{
+    if(arg1 == "Rescale"){
+        ui->rescaleMaxInput->setEnabled(true);
+        ui->rescaleMinInput->setEnabled(true);
+    }
+    else{
+        ui->rescaleMaxInput->setEnabled(false);
+        ui->rescaleMinInput->setEnabled(false);
+    }
 }
