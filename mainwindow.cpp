@@ -364,7 +364,6 @@ void MainWindow::saveRecording(){
     }
     else if(ui->fileFormat->currentText() == "Numpy array"){
         saveNumpy(fileName, dir.path(), spectogram);
-        saveColorImg(fileName, dir.path(), spectogramImg);
     }
     else if(ui->fileFormat->currentText() == "JPG color image"){
         saveColorImg(fileName, dir.path(), spectogramImg);
