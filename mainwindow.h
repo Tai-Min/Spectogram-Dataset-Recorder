@@ -58,6 +58,7 @@ private:
     QSound stopSound; //!< Play stop.wav.
 
     bool isRepeating = false; //!< True when START REPEAT is used, false otherwise.
+    unsigned long repeatCntr = 0; //!< Used to track number of repeats
 
     QAudioInput *audioInput; //!< Device used to record data.
     QBuffer audioBuf; //!< Raw audio data is stored here.

@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    this->setFixedSize(QSize(500,890));
+    this->setFixedSize(QSize(500,652));
 
     ui->spectogramLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
@@ -194,6 +194,10 @@ bool MainWindow::validateInputs(){
             ui->rescaleMaxInput->text().toDouble() == ui->rescaleMinInput->text().toDouble())
         errText = "Rescale parameters can't be equal.";
 
+    // Number of repeats for repeating recording
+    else if(isRepeating && ui->numRepeatsInput->text().toInt() < 0)
+        errText = "Number of repeats must be 0 or bigger.";
+
     if(errText != ""){
         QMessageBox msgBox;
         msgBox.setText(errText);
@@ -317,7 +321,7 @@ void MainWindow::savePlain(QString fname, QString dname, const MatrixMath::vec2d
 }
 
 void MainWindow::saveColorImg(QString fname, QString dname, const QImage & img){
-    img.save(dname + "/" + fname);
+    img.save(dname + "/" + fname + ".jpg");
 }
 
 void MainWindow::saveGrayscaleImg(QString fname, QString dname, const QImage & img){
@@ -360,6 +364,7 @@ void MainWindow::saveRecording(){
     }
     else if(ui->fileFormat->currentText() == "Numpy array"){
         saveNumpy(fileName, dir.path(), spectogram);
+        saveColorImg(fileName, dir.path(), spectogramImg);
     }
     else if(ui->fileFormat->currentText() == "JPG color image"){
         saveColorImg(fileName, dir.path(), spectogramImg);
@@ -386,6 +391,7 @@ void MainWindow::uxRecording(){
     ui->stopButton->setEnabled(false);
     ui->startButton->setEnabled(false);
     ui->startRepeatButton->setEnabled(false);
+    ui->numRepeatsInput->setEnabled(false);
 
     // play sound
     startSound.play();
@@ -425,6 +431,7 @@ void MainWindow::uxIdle(){
     ui->stopButton->setEnabled(false);
     ui->startButton->setEnabled(false);
     ui->startRepeatButton->setEnabled(false);
+    ui->numRepeatsInput->setEnabled(false);
 
     // play sound
     stopSound.play();
@@ -456,11 +463,13 @@ void MainWindow::uxIdle(){
     ui->stopButton->setEnabled(false);
     ui->startButton->setEnabled(false);
     ui->startRepeatButton->setEnabled(false);
+    ui->numRepeatsInput->setEnabled(false);
 
     // enable recording buttons
     ui->startButton->setEnabled(true);
     if(ui->recordType->currentText() == "Fixed duration"){
         ui->startRepeatButton->setEnabled(true);
+        ui->numRepeatsInput->setEnabled(true);
     }
 
     this->ui->timeLabel->clearFocus();
@@ -530,8 +539,13 @@ void MainWindow::stopRecording(bool fixedDurationSuccess){
             closeAndClearAudioBuffer();
 
             // repeat recording if START REPEAT was clicked
+
             if(isRepeating){
-                startRecording();
+                repeatCntr++;
+                if(repeatCntr < ui->numRepeatsInput->text().toInt() || ui->numRepeatsInput->text().toInt() == 0)
+                    startRecording();
+                else
+                    isRepeating = false;
             }
         }
         // recording stopped using STOP button so clear stuff and finish
@@ -563,10 +577,12 @@ void MainWindow::on_recordType_currentIndexChanged(const QString &arg1)
     if(arg1 != "Fixed duration"){
         ui->durationInput->setEnabled(false);
         ui->startRepeatButton->setEnabled(false);
+        ui->numRepeatsInput->setEnabled(false);
     }
     else{
         ui->durationInput->setEnabled(true);
         ui->startRepeatButton->setEnabled(true);
+        ui->numRepeatsInput->setEnabled(true);
     }
 }
 
@@ -596,6 +612,7 @@ void MainWindow::on_startButton_clicked()
 void MainWindow::on_startRepeatButton_clicked()
 {
     isRepeating = true;
+    repeatCntr = 0;
     startRecording();
 }
 

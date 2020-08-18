@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>888</height>
+    <width>460</width>
+    <height>652</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,12 +28,15 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>10</number>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>1</number>
       </property>
-      <item>
-       <layout class="QFormLayout" name="formLayout">
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Device settings</string>
+       </attribute>
+       <layout class="QFormLayout" name="formLayout_2">
         <item row="0" column="0">
          <widget class="QLabel" name="label">
           <property name="maximumSize">
@@ -192,129 +195,6 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Class name:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <widget class="QLineEdit" name="classInput">
-          <property name="text">
-           <string>class</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Pre emphasis filter coeff:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1">
-         <widget class="QLineEdit" name="preEmphasisInput">
-          <property name="text">
-           <string>0.97</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="0">
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>Frame size (ms):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="1">
-         <widget class="QLineEdit" name="frameSizeInput">
-          <property name="text">
-           <string>25</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>Frame stride (ms):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="1">
-         <widget class="QLineEdit" name="frameStrideInput">
-          <property name="text">
-           <string>10</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0">
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>DFTs:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="1">
-         <widget class="QLineEdit" name="FFTPointsInput">
-          <property name="text">
-           <string>512</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="0">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Filter banks:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="1">
-         <widget class="QLineEdit" name="filterBanksInput">
-          <property name="text">
-           <string>26</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="0">
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>Result matrix:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="1">
-         <widget class="QComboBox" name="resultMatrix">
-          <item>
-           <property name="text">
-            <string>MSFB</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>MFFC</string>
-           </property>
-          </item>
-         </widget>
-        </item>
         <item row="8" column="1">
          <widget class="QComboBox" name="fileFormat">
           <item>
@@ -339,14 +219,144 @@
           </item>
          </widget>
         </item>
-        <item row="16" column="0">
+        <item row="9" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Class name:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="1">
+         <widget class="QLineEdit" name="classInput">
+          <property name="text">
+           <string>class</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Spectogram settings</string>
+       </attribute>
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Pre emphasis filter coeff:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="preEmphasisInput">
+          <property name="text">
+           <string>0.97</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Frame size (ms):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="frameSizeInput">
+          <property name="text">
+           <string>25</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Frame stride (ms):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="frameStrideInput">
+          <property name="text">
+           <string>10</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>DFTs:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="FFTPointsInput">
+          <property name="text">
+           <string>512</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Filter banks:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="filterBanksInput">
+          <property name="text">
+           <string>26</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_14">
+          <property name="text">
+           <string>Result matrix:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QComboBox" name="resultMatrix">
+          <item>
+           <property name="text">
+            <string>MSFB</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>MFFC</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="6" column="0">
          <widget class="QLabel" name="label_16">
           <property name="text">
            <string>First MFCC coeff to keep:</string>
           </property>
          </widget>
         </item>
-        <item row="16" column="1">
+        <item row="6" column="1">
          <widget class="QLineEdit" name="firstMFCCInput">
           <property name="enabled">
            <bool>false</bool>
@@ -359,14 +369,14 @@
           </property>
          </widget>
         </item>
-        <item row="17" column="0">
+        <item row="7" column="0">
          <widget class="QLabel" name="label_17">
           <property name="text">
            <string>Last MFCC coeff to keep:</string>
           </property>
          </widget>
         </item>
-        <item row="17" column="1">
+        <item row="7" column="1">
          <widget class="QLineEdit" name="lastMFCCInput">
           <property name="enabled">
            <bool>false</bool>
@@ -379,7 +389,14 @@
           </property>
          </widget>
         </item>
-        <item row="18" column="1">
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>Sinusoidal liftering:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
          <widget class="QComboBox" name="lifteringInput">
           <property name="enabled">
            <bool>false</bool>
@@ -396,21 +413,14 @@
           </item>
          </widget>
         </item>
-        <item row="18" column="0">
-         <widget class="QLabel" name="label_18">
-          <property name="text">
-           <string>Sinusoidal liftering:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="19" column="0">
+        <item row="9" column="0">
          <widget class="QLabel" name="label_19">
           <property name="text">
            <string>Cepstral lifters:</string>
           </property>
          </widget>
         </item>
-        <item row="19" column="1">
+        <item row="9" column="1">
          <widget class="QLineEdit" name="cepLiftersInput">
           <property name="enabled">
            <bool>false</bool>
@@ -423,14 +433,14 @@
           </property>
          </widget>
         </item>
-        <item row="20" column="0">
+        <item row="10" column="0">
          <widget class="QLabel" name="label_20">
           <property name="text">
            <string>Scale data:</string>
           </property>
          </widget>
         </item>
-        <item row="20" column="1">
+        <item row="10" column="1">
          <widget class="QComboBox" name="rescaleInput">
           <item>
            <property name="text">
@@ -444,7 +454,14 @@
           </item>
          </widget>
         </item>
-        <item row="21" column="1">
+        <item row="11" column="0">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Minimum value:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
          <widget class="QLineEdit" name="rescaleMinInput">
           <property name="enabled">
            <bool>false</bool>
@@ -454,21 +471,14 @@
           </property>
          </widget>
         </item>
-        <item row="21" column="0">
-         <widget class="QLabel" name="label_21">
-          <property name="text">
-           <string>Minimum value:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="22" column="0">
+        <item row="12" column="0">
          <widget class="QLabel" name="label_22">
           <property name="text">
            <string>Maximum value:</string>
           </property>
          </widget>
         </item>
-        <item row="22" column="1">
+        <item row="12" column="1">
          <widget class="QLineEdit" name="rescaleMaxInput">
           <property name="enabled">
            <bool>false</bool>
@@ -479,8 +489,8 @@
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
+      </widget>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="spectogramLabel">
@@ -543,18 +553,32 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="startRepeatButton">
-        <property name="minimumSize">
-         <size>
-          <width>90</width>
-          <height>90</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>START 
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QPushButton" name="startRepeatButton">
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>60</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>START 
 REPEAT</string>
-        </property>
-       </widget>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="numRepeatsInput">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QLineEdit" name="timeLabel">
