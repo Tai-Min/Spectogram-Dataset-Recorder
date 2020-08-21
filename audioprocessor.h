@@ -256,8 +256,6 @@ private:
      */
     void sinLiftMatrix(MatrixMath::vec2d & v) const;
 
-
-
 public:
     /**
      * @brief Class constructor.

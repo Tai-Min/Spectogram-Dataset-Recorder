@@ -489,7 +489,7 @@ void MainWindow::startRecording(){
 
     uxRecording();
 
-    audioInput = new QAudioInput(format, this);
+    audioInput = new QAudioInput(getAudioDevice(ui->recorderDevice->currentText()),format, this);
 
     audioBuf.open(QIODevice::ReadWrite);
 
