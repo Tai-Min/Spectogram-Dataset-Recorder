@@ -248,7 +248,7 @@ auto MatrixMath::linspace(long double low, long double high, unsigned int numPoi
     return result;
 }
 
-bool AudioProcessor::validateConfig(bool rescale, bool isMFCC, bool isLiftering) const {
+bool AudioProcessor::validateConfig() const {
     if(conf.bytesPerSample == 0 || conf.bytesPerSample > 2)
         return 0;
     if(conf.numberOfChannels == 0)
@@ -263,15 +263,15 @@ bool AudioProcessor::validateConfig(bool rescale, bool isMFCC, bool isLiftering)
         return 0;
     if(conf.numberOfFilterBanks == 0)
         return 0;
-    if(isMFCC && conf.firstMFCC > conf.numberOfFilterBanks)
+    if(conf.MFCC && conf.firstMFCC > conf.numberOfFilterBanks)
         return 0;
-    if(isMFCC && conf.lastMFCC > conf.numberOfFilterBanks)
+    if(conf.MFCC && conf.lastMFCC > conf.numberOfFilterBanks)
         return 0;
-    if(isMFCC && conf.firstMFCC > conf.lastMFCC)
+    if(conf.MFCC && conf.firstMFCC > conf.lastMFCC)
         return 0;
-    if(isMFCC && isLiftering && conf.cepLifter < 1)
+    if(conf.MFCC && conf.sinLift && conf.cepLifter < 1)
         return 0;
-    if(rescale && conf.rescaleMax == conf.rescaleMin)
+    if(conf.rescale && conf.rescaleMax == conf.rescaleMin)
         return 0;
     return 1;
 }
@@ -407,8 +407,8 @@ void AudioProcessor::sinLiftMatrix(MatrixMath::vec2d & v) const {
     }
 }
 
-auto AudioProcessor::processBuffer(const byteVec & buffer, bool rescale, bool mfcc, bool lift) const -> MatrixMath::vec2d {
-    if(!validateConfig(rescale, mfcc, lift)){
+auto AudioProcessor::processBuffer(const byteVec & buffer) const -> MatrixMath::vec2d {
+    if(!validateConfig()){
         throw AudioProcessorException("Invalid audio configuration.");
     }
 
@@ -438,7 +438,7 @@ auto AudioProcessor::processBuffer(const byteVec & buffer, bool rescale, bool mf
     filterBanks(matrixData);
 
     // apply MFCC if necessary
-    if(mfcc){
+    if(conf.MFCC){
         MatrixMath::dctMatrix(matrixData);
 
         // erase not needed coeffs
@@ -446,7 +446,7 @@ auto AudioProcessor::processBuffer(const byteVec & buffer, bool rescale, bool mf
         unsigned int numToEnd = matrixData[0].size() - conf.lastMFCC;
         MatrixMath::eraseColumnsMatrix(matrixData, numFromStart, numToEnd);
 
-        if(lift){
+        if(conf.sinLift){
             sinLiftMatrix(matrixData);
         }
     }
@@ -455,7 +455,7 @@ auto AudioProcessor::processBuffer(const byteVec & buffer, bool rescale, bool mf
 
     MatrixMath::transposeMatrix(matrixData);
 
-    if(rescale){
+    if(conf.rescale){
         MatrixMath::rescaleMatrix(matrixData, conf.rescaleMin, conf.rescaleMax);
     }
     cout << "Shape: ";

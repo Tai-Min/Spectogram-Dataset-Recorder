@@ -161,9 +161,12 @@ public:
         unsigned int framingStride = 0;
         unsigned int NFFT = 0;
         unsigned int numberOfFilterBanks = 0;
+        bool MFCC;
         unsigned int firstMFCC = 0;
         unsigned int lastMFCC = 0;
+        bool sinLift;
         unsigned int cepLifter = 0;
+        bool rescale;
         long double rescaleMin = 0;
         long double rescaleMax = 0;
     };
@@ -175,7 +178,7 @@ private:
      * @brief Validate configuration struct.
      * @return True if struct contains valid configuration.
      */
-    bool validateConfig(bool rescale, bool isMFCC, bool isLiftering) const;
+    bool validateConfig() const;
 
     /**
      * @brief Convert frequency value to Mel scale.
@@ -253,20 +256,14 @@ private:
      */
     void sinLiftMatrix(MatrixMath::vec2d & v) const;
 
-    /**
-     * @brief Convert given audio/pcm buffer into using either MSFB or MFCC matrix.
-     * @param buffer Buffer to process.
-     * @param mfcc Set to true if compute MFCC.
-     * @return Spectogram.
-     */
-    MatrixMath::vec2d processBuffer(const byteVec & buffer, bool rescale, bool mfcc = false, bool lift = false) const;
+
 
 public:
     /**
      * @brief Class constructor.
      * @param
      */
-    AudioProcessor(config c = {0,0,0,0,0,0,0,0,0,0,0,0,0}){setConfig(c);}
+    AudioProcessor(config c = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}){setConfig(c);}
 
     /**
      * @brief Get config of audio processor.
@@ -281,18 +278,12 @@ public:
     void setConfig(config c){conf = c;}
 
     /**
-     * @brief Convert given audio/pcm buffer into filter banks matrix.
-     * @param buffer Buffer to convert.
-     * @return Filter banks matrix.
+     * @brief Convert given audio/pcm buffer into using either MSFB or MFCC matrix.
+     * @param buffer Buffer to process.
+     * @param mfcc Set to true if compute MFCC.
+     * @return Spectogram.
      */
-    MatrixMath::vec2d MSFB(const byteVec & buffer, bool rescale) const {return processBuffer(buffer, rescale);}
-
-    /**
-     * @brief Convert given audio/pcm buffer into Mel-Frequency Cepstral Coefficients matrix.
-     * @param buffer Buffer to convert.
-     * @return MFCC matrix.
-     */
-    MatrixMath::vec2d MFCC(const byteVec & buffer, bool rescale, bool liftSignal) const {return processBuffer(buffer, rescale, true, liftSignal);}
+    MatrixMath::vec2d processBuffer(const byteVec & buffer) const;
 };
 
 #endif // AUDIOPROCESSOR_H

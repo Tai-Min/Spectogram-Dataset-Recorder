@@ -261,9 +261,12 @@ MatrixMath::vec2d MainWindow::processAudioBuffer(){
     const unsigned int frameStride = ui->frameStrideInput->text().toInt();
     const unsigned int NFFT = ui->FFTPointsInput->text().toInt();
     const unsigned int numFilterBanks = ui->filterBanksInput->text().toInt();
+    const bool MFCC = ui->resultMatrix->currentText() == "MFCC";
     const unsigned int firstMFCC = ui->firstMFCCInput->text().toInt();
     const unsigned int lastMFCC = ui->lastMFCCInput->text().toInt();
+    const bool sinLift = ui->lifteringInput->currentText() == "Apply sinusoidal liftering";
     const unsigned int cepLifter = ui->cepLiftersInput->text().toInt();
+    const bool rescale = ui->rescaleInput->currentText() == "Rescale";
     const long double scaleMin = static_cast<long double>(ui->rescaleMinInput->text().toDouble());
     const long double scaleMax = static_cast<long double>(ui->rescaleMaxInput->text().toDouble());
 
@@ -276,9 +279,12 @@ MatrixMath::vec2d MainWindow::processAudioBuffer(){
         frameStride,
         NFFT,
         numFilterBanks,
+        MFCC,
         firstMFCC,
         lastMFCC,
+        sinLift,
         cepLifter,
+        rescale,
         scaleMin,
         scaleMax
     };
@@ -287,15 +293,7 @@ MatrixMath::vec2d MainWindow::processAudioBuffer(){
     AudioProcessor::byteVec byteData(audioBuf.buffer().begin(), audioBuf.buffer().end());
 
     MatrixMath::vec2d spectogram;
-    if(ui->resultMatrix->currentText() == "MSFB"){
-        spectogram = audioProc.MSFB(byteData, ui->rescaleInput->currentText() == "Rescale");
-    }
-    else{
-        bool lift = false;
-        if(ui->lifteringInput->currentText() == "Apply sinusoidal liftering")
-            lift = true;
-        spectogram = audioProc.MFCC(byteData, ui->rescaleInput->currentText() == "Rescale", lift);
-    }
+    spectogram = audioProc.processBuffer(byteData);
 
     return spectogram;
 }
@@ -523,13 +521,13 @@ void MainWindow::stopRecording(bool fixedDurationSuccess){
             const int numChannels = ui->channelCountInput->text().toInt();
             const int bytesPerSample = ui->sampleSize->currentText().toInt()/8;
             const int recordDuration = ui->durationInput->text().toInt();
-            const int expectedNumberOfSamples = sampleRate * bytesPerSample * numChannels * recordDuration*0.001;
-            if(audioBuf.buffer().size() > expectedNumberOfSamples){
-                const int diff = audioBuf.buffer().size() - expectedNumberOfSamples;
-                audioBuf.buffer().remove(expectedNumberOfSamples, diff);
+            const int expectedBufferSize = sampleRate * bytesPerSample * numChannels * recordDuration*0.001;
+            if(audioBuf.buffer().size() > expectedBufferSize){
+                const int diff = audioBuf.buffer().size() - expectedBufferSize;
+                audioBuf.buffer().remove(expectedBufferSize, diff);
             }
-            else if(audioBuf.buffer().size() < expectedNumberOfSamples){
-                const int diff = expectedNumberOfSamples - audioBuf.buffer().size();
+            else if(audioBuf.buffer().size() < expectedBufferSize){
+                const int diff = expectedBufferSize - audioBuf.buffer().size();
                 audioBuf.buffer().append(diff, 0);
             }
 
