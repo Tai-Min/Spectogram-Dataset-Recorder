@@ -145,7 +145,7 @@ void MatrixMath::normalizeMatrixByColumns(vec2d & v){
     vec maxs = maxMatrixByColumns(v);
     for(unsigned int i = 0; i < v.size(); i++){
         for(unsigned int j = 0; j < v[i].size(); j++){
-            v[i][j] = (v[i][j] - means[j])/(maxs[j] - mins[j]);
+            v[i][j] = (v[i][j] - means[j]);//(maxs[j] - mins[j]);
         }
     }
 }
@@ -451,7 +451,8 @@ auto AudioProcessor::processBuffer(const byteVec & buffer) const -> MatrixMath::
         }
     }
 
-    MatrixMath::normalizeMatrixByColumns(matrixData);
+    if(conf.normalize)
+        MatrixMath::normalizeMatrixByColumns(matrixData);
 
     MatrixMath::transposeMatrix(matrixData);
 

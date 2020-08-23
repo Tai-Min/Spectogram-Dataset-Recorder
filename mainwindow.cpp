@@ -266,6 +266,7 @@ MatrixMath::vec2d MainWindow::processAudioBuffer(){
     const unsigned int lastMFCC = ui->lastMFCCInput->text().toInt();
     const bool sinLift = ui->lifteringInput->currentText() == "Apply sinusoidal liftering";
     const unsigned int cepLifter = ui->cepLiftersInput->text().toInt();
+    const bool normalize = ui->normalizeData->currentText() == "Normalize";
     const bool rescale = ui->rescaleInput->currentText() == "Rescale";
     const long double scaleMin = static_cast<long double>(ui->rescaleMinInput->text().toDouble());
     const long double scaleMax = static_cast<long double>(ui->rescaleMaxInput->text().toDouble());
@@ -284,6 +285,7 @@ MatrixMath::vec2d MainWindow::processAudioBuffer(){
         lastMFCC,
         sinLift,
         cepLifter,
+        normalize,
         rescale,
         scaleMin,
         scaleMax

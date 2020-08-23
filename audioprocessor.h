@@ -161,12 +161,13 @@ public:
         unsigned int framingStride = 0;
         unsigned int NFFT = 0;
         unsigned int numberOfFilterBanks = 0;
-        bool MFCC;
+        bool MFCC = false;
         unsigned int firstMFCC = 0;
         unsigned int lastMFCC = 0;
-        bool sinLift;
+        bool sinLift = false;
         unsigned int cepLifter = 0;
-        bool rescale;
+        bool normalize = false;
+        bool rescale = false;
         long double rescaleMin = 0;
         long double rescaleMax = 0;
     };
@@ -261,7 +262,7 @@ public:
      * @brief Class constructor.
      * @param
      */
-    AudioProcessor(config c = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}){setConfig(c);}
+    AudioProcessor(config c = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}){setConfig(c);}
 
     /**
      * @brief Get config of audio processor.
